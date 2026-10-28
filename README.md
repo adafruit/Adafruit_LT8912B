@@ -1,66 +1,27 @@
 # Adafruit LT8912B
 
-Arduino support for the LT8912B MIPI DSI to HDMI/DVI bridge. The bridge is
-configured over I2C; video arrives through its separate MIPI DSI input.
-Sending pixels over I2C is not supported by this chip.
+Arduino support for the LT8912B MIPI DSI to HDMI/DVI bridge chip. This allows microcontroller/microcomputers with DSI output like the ESP32-P4 to drive a DVI / HDMI display monitor. To set up the timing, the LT8912B bridge is first configured over I2C. Then the driver must emit video data through MIPI DSI input. 
+Sending pixels over I2C is NOT supported by this chip, it's just for the config!
 
-The portable driver uses Wire and Adafruit BusIO. `Adafruit_LT8912B_GFX565`
-inherits from `Adafruit_GFX` and provides an ESP32-P4 DSI display with the
-standard drawing, text, bitmap, and rotation functions. Other processors may
-use the bridge driver with their own DSI host implementation.
+Examples show how to read the EDID timing from the display and then attempt to configure the bridge to match: note that the P4 has 2 lanes which means we max out at about 1024x768. Then you can use  `Adafruit_LT8912B_GFX565` which inherits from `Adafruit_GFX` and provides an ESP32-P4 DSI display with the
+standard  `Adafruit_GFX` drawing, text, bitmap, and rotation functions. Only the P4 is supported right now. Note that GFX assumes 16-bit RGB565 colorspace format and for now we just drop 888 to 565!
 
-Include `Adafruit_LT8912B_GFX565.h` and create an
-`Adafruit_LT8912B_GFX565 display`. After `begin()`, draw with functions such as
-`display.fillScreen()`, `display.drawCircle()`, and `display.print()`, then
-call `display.show()`. Colors use the standard 16-bit RGB565 format;
-`display.color565(red, green, blue)` converts 8-bit RGB components.
-The driver expands these colors into its 24-bit BGR framebuffer.
 GFX drawing targets framebuffer 0. `getFrameBuffer()` and `getPanel()` remain
 available for direct 24-bit drawing and separate video integration.
-Drawing repeatedly into an active single buffer can tear.
+Drawing repeatedly into an active single buffer can tear, double buffer for clean draws!
 
-This is an initial **0.1.0 review snapshot**. The originating Metro P4 sketches
-have produced working video on hardware; that does not establish hardware
-validation of this library port. HDMI audio remains unresolved and is not
-included in this version.
+We tried to get HDMI audio working but not successful yet (PR's welcome!) We do not have the under-NDA LT8912B datasheet and prefer to keep this codebase NDA free :)
 
-## Getting started
-
-Install this folder as an Arduino library, together with **Adafruit BusIO**,
-**Adafruit GFX Library**, and **Adafruit TestBed**. The P4 examples require an
-ESP32-P4 board with PSRAM. They compile with Arduino-ESP32 3.3.11 and the
-current 4.0.x source core. The helper uses
-the legacy PHY clock selection tested on the original P4 silicon.
-
-Select your ESP32-P4 board, or **ESP32P4 Dev Module** for a generic board,
-and enable **PSRAM** in the Arduino board menu. Set `RESET_PIN` at the top
-of each P4 sketch to match your LT8912B wiring.
-The reset pin defaults to the board's `PIN_DSI_RESET` when available;
-otherwise GPIO 20 is an example that you must check for your board.
-Connect I2C to the selected board's default `Wire` SDA and SCL pins;
-the examples use the default `Wire` setup. The updated
-**Adafruit Metro ESP32-P4** definition supplies its reset pin automatically.
-That board definition is proposed in
-[Arduino-ESP32 #12980](https://github.com/espressif/arduino-esp32/pull/12980).
-
-- `bridge_status`: portable I2C connection and bridge status example.
-- `p4_colorbars`: ESP32-P4 framebuffer output with a static test pattern.
-- `p4_graphics`: ESP32-P4 text and shapes drawn directly with Adafruit GFX.
-
-The P4 examples try `readEDIDTiming()` and use the monitor's preferred
-resolution, pixel clock, porches, sync widths, and sync polarities. They fall
-back to the previously tested 800 x 480 mode if EDID is unavailable,
-unsupported, exceeds the configured two-lane RGB888 bandwidth, or the display
-helper cannot start that mode. Monitor compatibility still requires testing.
+## EDID Conflicts with RTD266x
 
 To read EDID, turn the Adafruit adapter's **DDC switch ON** before starting.
 The examples hold the bridge in reset while reading, then check its control
-addresses at 0x48, 0x49, and 0x4A for conflicts. DDC can stay connected when
-those addresses are clear; an EDID response at 0x50 does not block startup.
-If a bridge address responds during reset, the sketch reports that address
-and waits for it to clear. Check the reset wiring, or isolate a conflicting
-monitor by turning the **DDC switch OFF** and removing any QT bypass.
-With DDC disconnected at startup, the examples use the fallback mode.
+addresses at 0x48, 0x49, and 0x4A for conflicts. 
+DDC can stay connected when
+those addresses are clear.
+
+Some monitors use RTD266x chips which expose the programming interface over DDC, which can conflict with the LT8912B's programming address. In such cases, isolate a conflicting
+monitor by turning the **DDC switch OFF** and you can connect to the DDC/EDID interface over the separate Stemma QT connection. Or, with DDC fully disconnected at startup, the examples use the fallback mode.
 
 ## Optional EDID timing
 
@@ -82,11 +43,6 @@ if (bridge.readEDIDTiming(timing)) {
 // display.begin(bridge, timing) configures both the P4 DSI host and bridge.
 ```
 
-DDC must be connected for the read. If it shares the bridge's I2C bus, hold
-the bridge in reset and check that no display device responds at 0x48-0x4A
-before bridge configuration; use a separate DDC bus or isolate DDC if there is
-a conflict. The optional `wire` argument can select that separate bus.
-
 The decoder supports the first preferred detailed timing in EDID 1.3/1.4:
 progressive digital video with separate H/V sync, no stereo or borders, and
 sync widths supported by the bridge. It extracts resolution, pixel clock,
@@ -94,28 +50,6 @@ front/back porches, sync widths and polarities. It does not search extensions
 or alternate modes. The caller must check framebuffer dimensions, memory and
 DSI-host clock/bandwidth limits before applying the timing. A valid EDID does
 not guarantee that every advertised mode works with the selected DSI host.
-
-## Video playback
-
-SD access and video decoding belong in a separate player. The existing
-[Metro P4 SD video sketch](https://github.com/adafruit/MBAdafruitBoards/tree/master/Development/Video/LT8912B%20DSI%20DVI/Arduino/MetroP4DviVideo)
-is a reference for that integration. Its player code is GPL-2.0-only and is
-not copied into this Apache-2.0 library. That demonstration plays silent
-MJPEG video; MP4 soundtrack decoding is not supplied here.
-
-## Build coverage
-
-The Adafruit CI workflow builds all examples on its `metro_esp32p4` and
-generic `esp32p4` targets, and checks formatting and standard Doxygen
-documentation. The Metro target uses
-the source core while the new board definition awaits upstream inclusion.
-It uses the upstream [Adafruit CI scripts](https://github.com/adafruit/ci-arduino).
-
-Local checks on 2026-10-07: all three examples compiled for the new Metro P4
-board definition on the Arduino-ESP32 4.0.x source core. `p4_colorbars` also
-compiled with Arduino-ESP32 3.3.11. Formatting checks passed, and Doxygen
-1.8.13 using the standard CI template passed with no warnings. The new library
-has not been uploaded to the board; the paused audio test is unchanged.
 
 ## Credits and license
 
