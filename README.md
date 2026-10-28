@@ -3,7 +3,7 @@
 Arduino support for the LT8912B MIPI DSI to HDMI/DVI bridge chip. This allows microcontroller/microcomputers with DSI output like the ESP32-P4 to drive a DVI / HDMI display monitor. To set up the timing, the LT8912B bridge is first configured over I2C. Then the driver must emit video data through MIPI DSI input. 
 Sending pixels over I2C is NOT supported by this chip, it's just for the config!
 
-Examples show how to read the EDID timing from the display and then attempt to configure the bridge to match: note that the P4 has 2 lanes which means we max out at about 1024x768. Then you can use  `Adafruit_LT8912B_GFX565` which inherits from `Adafruit_GFX` and provides an ESP32-P4 DSI display with the
+Examples show how to read the EDID timing from the display and then attempt to configure the bridge to match: note that the P4 has 2 lanes which means we max out at about 720p60 or 1080p30. Then you can use  `Adafruit_LT8912B_GFX565` which inherits from `Adafruit_GFX` and provides an ESP32-P4 DSI display with the
 standard  `Adafruit_GFX` drawing, text, bitmap, and rotation functions. Only the P4 is supported right now. Note that GFX assumes 16-bit RGB565 colorspace format and for now we just drop 888 to 565!
 
 GFX drawing targets framebuffer 0. `getFrameBuffer()` and `getPanel()` remain
