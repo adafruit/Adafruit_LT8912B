@@ -23,12 +23,13 @@ current 4.0.x source core. The helper uses
 the legacy PHY clock selection tested on the original P4 silicon.
 
 Select your ESP32-P4 board, or **ESP32P4 Dev Module** for a generic board,
-and enable **PSRAM** in the Arduino board menu. Set `RESET_PIN`, `I2C_SDA`,
-and `I2C_SCL` at the top of each P4 sketch to match your LT8912B wiring.
+and enable **PSRAM** in the Arduino board menu. Set `RESET_PIN` at the top
+of each P4 sketch to match your LT8912B wiring.
 The reset pin defaults to the board's `PIN_DSI_RESET` when available;
 otherwise GPIO 20 is an example that you must check for your board.
-I2C defaults to the selected board's `SDA` and `SCL` pins. The updated
-**Adafruit Metro ESP32-P4** definition supplies these defaults automatically.
+Connect I2C to the selected board's default `Wire` SDA and SCL pins;
+the examples use the default `Wire` setup. The updated
+**Adafruit Metro ESP32-P4** definition supplies its reset pin automatically.
 That board definition is proposed in
 [Arduino-ESP32 #12980](https://github.com/espressif/arduino-esp32/pull/12980).
 
@@ -37,7 +38,7 @@ That board definition is proposed in
 - `p4_graphics`: ESP32-P4 output using an Adafruit GFX canvas.
 
 The P4 examples use the previously tested 800 x 480 video timing.
-Check the pin assignments and timing configuration
+Check the reset pin and timing configuration
 before using another board or monitor. Monitor acceptance of a timing or sync
 polarity must be tested. The examples keep their fixed mode; applications can
 optionally select the display's preferred timing with `readEDIDTiming()`.

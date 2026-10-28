@@ -7,14 +7,12 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32P4)
 #error "This example requires an ESP32-P4 board with PSRAM."
 #endif
-// Set these pins to match your ESP32-P4 board and LT8912B wiring.
+// Set the reset pin to match your ESP32-P4 board and LT8912B wiring.
 #if defined(PIN_DSI_RESET)
 const uint16_t RESET_PIN = PIN_DSI_RESET;
 #else
 const uint16_t RESET_PIN = 20; // Example GPIO; change to your bridge's reset pin.
 #endif
-const uint16_t I2C_SDA = SDA; // Defaults to the selected board's I2C pins.
-const uint16_t I2C_SCL = SCL;
 #define MONITOR_EDID_ADDRESS 0x50
 Adafruit_TestBed testbed;
 Adafruit_LT8912B bridge;
@@ -32,10 +30,6 @@ void setup() {
   // Keep the bridge in reset while checking for an accidentally joined DDC bus.
   digitalWrite(RESET_PIN, LOW);
   pinMode(RESET_PIN, OUTPUT);
-  // Set the control pins before TestBed or BusIO starts Wire.
-  if (!Wire.setPins(I2C_SDA, I2C_SCL)) {
-    halt("Could not set I2C pins.");
-  }
   if (testbed.scanI2CBus(MONITOR_EDID_ADDRESS)) {
     halt("DDC detected: turn the adapter DDC switch OFF and remove any QT bypass.");
   }
