@@ -23,6 +23,21 @@
 #define LT8912B_I2C_DSI 0x49  ///< DSI bank I2C address.
 #define LT8912B_I2C_AVI 0x4A  ///< AVI bank I2C address.
 
+/** EDID base-block layout, separate from the bridge register banks. */
+#define LT8912B_EDID_ADDRESS 0x50     ///< Display EEPROM I2C address.
+#define LT8912B_EDID_BLOCK_SIZE 128   ///< Bytes in one EDID block.
+#define LT8912B_EDID_VERSION 18       ///< Base-block version byte.
+#define LT8912B_EDID_REVISION 19      ///< Base-block revision byte.
+#define LT8912B_EDID_INPUT 20         ///< Video input definition byte.
+#define LT8912B_EDID_FEATURES 24      ///< Feature support byte.
+#define LT8912B_EDID_DTD 54           ///< First detailed timing descriptor.
+#define LT8912B_EDID_DIGITAL 0x80     ///< Digital display input flag.
+#define LT8912B_EDID_PREFERRED 0x02   ///< First detailed timing is preferred.
+#define LT8912B_EDID_SYNC_TYPE 0x18   ///< Separate digital sync encoding/mask.
+#define LT8912B_EDID_UNSUPPORTED 0xE1 ///< Interlace and stereo flag bits.
+#define LT8912B_EDID_HSYNC_POS 0x02   ///< Positive horizontal sync flag.
+#define LT8912B_EDID_VSYNC_POS 0x04   ///< Positive vertical sync flag.
+
 /** MAIN bank register addresses. Vendor tuning names follow Espressif. */
 #define LT8912B_REG_MAIN_DIGITAL_CLOCK_02 0x02 ///< MAIN bank digital clock 02.
 #define LT8912B_REG_MAIN_MIPI_RESET 0x03       ///< MAIN bank mipi reset.
@@ -190,6 +205,9 @@ class Adafruit_LT8912B {
   Adafruit_LT8912B& operator=(const Adafruit_LT8912B& other) = delete;
 
   bool begin(int16_t resetPin = -1, TwoWire* wire = &Wire);
+  static bool readEDIDTiming(LT8912B_Timing& timing, TwoWire* wire = &Wire);
+  static bool parseEDIDTiming(const uint8_t* edid, size_t length,
+                              LT8912B_Timing& timing);
   bool reset();
   bool configure(const LT8912B_Timing& timing, uint8_t lanes = 2);
   bool setHDMI(bool enabled);
