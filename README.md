@@ -22,19 +22,22 @@ ESP32-P4 board with PSRAM. They compile with Arduino-ESP32 3.3.11 and the
 current 4.0.x source core. The helper uses
 the legacy PHY clock selection tested on the original P4 silicon.
 
-Select **Adafruit Metro ESP32-P4** in the Arduino board menu. These examples
-require the updated Metro board definition, whose `pins_arduino.h` supplies
-`PIN_DSI_RESET` and the shared default I2C pins. Update an older prototype board
-definition before compiling; no manual SDA/SCL pin setup is needed in the sketches.
-The board definition is proposed in
+Select your ESP32-P4 board, or **ESP32P4 Dev Module** for a generic board,
+and enable **PSRAM** in the Arduino board menu. Set `RESET_PIN`, `I2C_SDA`,
+and `I2C_SCL` at the top of each P4 sketch to match your LT8912B wiring.
+The reset pin defaults to the board's `PIN_DSI_RESET` when available;
+otherwise GPIO 20 is an example that you must check for your board.
+I2C defaults to the selected board's `SDA` and `SCL` pins. The updated
+**Adafruit Metro ESP32-P4** definition supplies these defaults automatically.
+That board definition is proposed in
 [Arduino-ESP32 #12980](https://github.com/espressif/arduino-esp32/pull/12980).
 
 - `bridge_status`: portable I2C connection and bridge status example.
 - `p4_colorbars`: ESP32-P4 framebuffer output with a static test pattern.
 - `p4_graphics`: ESP32-P4 output using an Adafruit GFX canvas.
 
-The P4 examples use the Metro P4 board definition and the previously tested
-800 x 480 video timing. Check the board definition and timing configuration
+The P4 examples use the previously tested 800 x 480 video timing.
+Check the pin assignments and timing configuration
 before using another board or monitor. Monitor acceptance of a timing or sync
 polarity must be tested. The examples keep their fixed mode; applications can
 optionally select the display's preferred timing with `readEDIDTiming()`.
@@ -87,8 +90,9 @@ MJPEG video; MP4 soundtrack decoding is not supplied here.
 
 ## Build coverage
 
-The Adafruit CI workflow builds all examples on its `metro_esp32p4` target,
-and checks formatting and standard Doxygen documentation. This target uses
+The Adafruit CI workflow builds all examples on its `metro_esp32p4` and
+generic `esp32p4` targets, and checks formatting and standard Doxygen
+documentation. The Metro target uses
 the source core while the new board definition awaits upstream inclusion.
 It uses the upstream [Adafruit CI scripts](https://github.com/adafruit/ci-arduino).
 
