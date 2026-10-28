@@ -38,6 +38,8 @@ class Adafruit_LT8912B_GFX565 : public Adafruit_GFX {
   esp_lcd_panel_handle_t getPanel();
 
  private:
+  static inline void color565To888(uint16_t color, uint8_t* pixel);
+
   Adafruit_LT8912B* _bridge = nullptr;
   esp_ldo_channel_handle_t _power = nullptr;
   esp_lcd_dsi_bus_handle_t _bus = nullptr;

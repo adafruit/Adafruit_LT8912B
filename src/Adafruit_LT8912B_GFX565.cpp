@@ -150,6 +150,21 @@ void Adafruit_LT8912B_GFX565::end() {
   setRotation(rotation);
 }
 
+/** Expand a GFX RGB565 color into three bytes in framebuffer BGR888 order.
+ * @param color Packed 16-bit RGB565 color.
+ * @param pixel Destination for the blue, green, and red bytes.
+ */
+inline void Adafruit_LT8912B_GFX565::color565To888(uint16_t color,
+                                                   uint8_t* pixel) {
+  // Unpack GFX's fixed RGB565 pixel format, then expand each channel to 8 bits.
+  uint8_t red = (color >> 11) & 0x1F;
+  uint8_t green = (color >> 5) & 0x3F;
+  uint8_t blue = color & 0x1F;
+  pixel[0] = blue * 255 / 31;
+  pixel[1] = green * 255 / 63;
+  pixel[2] = red * 255 / 31;
+}
+
 /** Draw one RGB565 pixel into framebuffer 0, honoring GFX rotation and
  * clipping.
  * @param x Horizontal coordinate in the current rotation.
@@ -178,14 +193,8 @@ void Adafruit_LT8912B_GFX565::drawPixel(int16_t x, int16_t y, uint16_t color) {
       break;
   }
 
-  // Unpack GFX's fixed RGB565 pixel format, then expand each channel to 8 bits.
-  uint8_t red = (color >> 11) & 0x1F;
-  uint8_t green = (color >> 5) & 0x3F;
-  uint8_t blue = color & 0x1F;
   uint8_t* pixel = _pixels[0] + ((size_t)y * WIDTH + x) * 3;
-  pixel[0] = blue * 255 / 31;
-  pixel[1] = green * 255 / 63;
-  pixel[2] = red * 255 / 31;
+  color565To888(color, pixel);
 }
 
 /** Pack 8-bit RGB components into the standard Adafruit GFX RGB565 format.

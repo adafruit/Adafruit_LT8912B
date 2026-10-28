@@ -25,10 +25,9 @@ bool Adafruit_LT8912B::readEDIDTiming(LT8912B_Timing& timing, TwoWire* wire) {
     return false;
   }
   uint8_t data[LT8912B_EDID_BLOCK_SIZE];
-  for (uint8_t offset = 0; offset < sizeof(data); offset += 32) {
-    if (!device.write_then_read(&offset, 1, data + offset, 32)) {
-      return false;
-    }
+  uint8_t offset = 0;
+  if (!device.write_then_read(&offset, 1, data, sizeof(data))) {
+    return false;
   }
   return parseEDIDTiming(data, sizeof(data), timing);
 }
