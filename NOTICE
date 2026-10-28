@@ -1,0 +1,21 @@
+Adafruit LT8912B Arduino driver
+Copyright (c) 2026 Adafruit Industries
+
+This project adapts LT8912B initialization and register programming from
+Espressif's esp_lcd_lt8912b component in esp-bsp:
+https://github.com/espressif/esp-bsp/tree/master/components/lcd/esp_lcd_lt8912b
+
+The source files used carry these notices:
+  esp_lcd_lt8912b.c:
+    SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
+  esp_lcd_lt8912b.h:
+    SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
+  SPDX-License-Identifier: Apache-2.0
+
+Adafruit's changes include an Arduino Wire/BusIO interface, separated bridge
+control and ESP32-P4 display support, and Arduino examples. The adapted code
+is not an unmodified copy of the upstream component.
+
+This attribution notice was added by Adafruit for this port; it is not a
+NOTICE file supplied by Espressif. The Apache License, Version 2.0 is included
+in license.txt. Dependencies retain their own licenses.
