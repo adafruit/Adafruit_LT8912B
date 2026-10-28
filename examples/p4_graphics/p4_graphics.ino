@@ -84,6 +84,9 @@ void setup() {
   // Draw once; repeated writes into an active single buffer can tear.
   uint16_t foreground = display.color565(80, 220, 255);
   uint16_t background = display.color565(8, 12, 24);
+  uint16_t red = display.color565(255, 0, 0);
+  uint16_t blue = display.color565(0, 0, 255);
+  uint16_t yellow = display.color565(255, 255, 0);
   int16_t width = display.width();
   int16_t height = display.height();
   int16_t radius = height / 6;
@@ -97,12 +100,14 @@ void setup() {
   display.setTextSize(2);
   display.setCursor(48, 112);
   display.print("ESP32-P4 DSI + Adafruit GFX");
-  display.fillCircle(width / 5, height * 3 / 5, radius, foreground);
-  display.drawCircle(width / 2, height * 3 / 5, radius, foreground);
+  // Bauhaus shape colors: red square, blue circle, and yellow triangle.
+  display.fillRect(width / 5 - radius, height * 3 / 5 - radius,
+                   radius * 2, radius * 2, red);
+  display.fillCircle(width / 2, height * 3 / 5, radius, blue);
   display.fillTriangle(width * 4 / 5 - radius, height * 3 / 5 + radius,
                        width * 4 / 5, height * 3 / 5 - radius,
                        width * 4 / 5 + radius, height * 3 / 5 + radius,
-                       foreground);
+                       yellow);
   if (!display.show()) {
     halt("Could not display the framebuffer.");
   }
