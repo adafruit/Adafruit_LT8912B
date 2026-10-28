@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Adafruit Industries
 // SPDX-License-Identifier: Apache-2.0
 
-#include <Adafruit_LT8912B_P4.h>
+#include <Adafruit_LT8912B_GFX565.h>
 #include <Adafruit_TestBed.h>
 
 #if !defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -19,7 +19,7 @@ const uint32_t DSI_LANE_BIT_RATE_MBPS = 960;
 
 Adafruit_TestBed testbed;
 Adafruit_LT8912B bridge;
-Adafruit_LT8912B_P4 display;
+Adafruit_LT8912B_GFX565 display;
 
 LT8912B_Timing timing; // Fall back to 800 x 480 if EDID cannot be used.
 
@@ -80,22 +80,15 @@ void setup() {
     }
   }
 
-  // Panel framebuffer bytes are blue, green, red, in that order.
-  const uint8_t bars[8][3] = {
-    {255, 255, 255}, {0, 255, 255}, {255, 255, 0}, {0, 255, 0},
-    {255, 0, 255},   {0, 0, 255},   {255, 0, 0},   {0, 0, 0}
+  // Standard Adafruit GFX RGB565 colors: white, yellow, cyan, green,
+  // magenta, red, blue, and black.
+  const uint16_t bars[8] = {
+    0xFFFF, 0xFFE0, 0x07FF, 0x07E0, 0xF81F, 0xF800, 0x001F, 0x0000
   };
-  uint8_t *pixels = display.getFrameBuffer();
-  if (!pixels) {
-    halt("No framebuffer available.");
-  }
-  for (uint16_t y = 0; y < timing.height; y++) {
-    for (uint16_t x = 0; x < timing.width; x++) {
-      uint8_t bar = (uint32_t)x * 8 / timing.width;
-      *pixels++ = bars[bar][0];
-      *pixels++ = bars[bar][1];
-      *pixels++ = bars[bar][2];
-    }
+  for (uint8_t bar = 0; bar < 8; bar++) {
+    int16_t left = (uint32_t)bar * display.width() / 8;
+    int16_t right = (uint32_t)(bar + 1) * display.width() / 8;
+    display.fillRect(left, 0, right - left, display.height(), bars[bar]);
   }
   if (!display.show()) {
     halt("Could not display the framebuffer.");

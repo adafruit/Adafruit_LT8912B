@@ -44,7 +44,7 @@ bool Adafruit_LT8912B::readEDIDTiming(LT8912B_Timing& timing, TwoWire* wire) {
  * @note Validates the header and checksum. Does not search extension blocks or
  * other descriptors, or check the DSI host's clock, bandwidth, or memory
  * limits. The caller must pass the resulting timing to both the DSI host and
- * bridge; Adafruit_LT8912B_P4::begin() does this. VIC and aspect ratio are
+ * bridge; Adafruit_LT8912B_GFX565::begin() does this. VIC and aspect ratio are
  * unspecified.
  */
 bool Adafruit_LT8912B::parseEDIDTiming(const uint8_t* edid, size_t length,

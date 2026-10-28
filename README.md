@@ -4,10 +4,20 @@ Arduino support for the LT8912B MIPI DSI to HDMI/DVI bridge. The bridge is
 configured over I2C; video arrives through its separate MIPI DSI input.
 Sending pixels over I2C is not supported by this chip.
 
-The portable driver uses Wire and Adafruit BusIO. The `Adafruit_LT8912B_P4` helper creates
-the DSI display and exposes its ESP-IDF panel handle for drawing and separate
-video integration. Other processors may use the bridge driver with their own
-DSI host implementation.
+The portable driver uses Wire and Adafruit BusIO. `Adafruit_LT8912B_GFX565`
+inherits from `Adafruit_GFX` and provides an ESP32-P4 DSI display with the
+standard drawing, text, bitmap, and rotation functions. Other processors may
+use the bridge driver with their own DSI host implementation.
+
+Include `Adafruit_LT8912B_GFX565.h` and create an
+`Adafruit_LT8912B_GFX565 display`. After `begin()`, draw with functions such as
+`display.fillScreen()`, `display.drawCircle()`, and `display.print()`, then
+call `display.show()`. Colors use the standard 16-bit RGB565 format;
+`display.color565(red, green, blue)` converts 8-bit RGB components.
+The driver expands these colors into its 24-bit BGR framebuffer.
+GFX drawing targets framebuffer 0. `getFrameBuffer()` and `getPanel()` remain
+available for direct 24-bit drawing and separate video integration.
+Drawing repeatedly into an active single buffer can tear.
 
 This is an initial **0.1.0 review snapshot**. The originating Metro P4 sketches
 have produced working video on hardware; that does not establish hardware
@@ -35,7 +45,7 @@ That board definition is proposed in
 
 - `bridge_status`: portable I2C connection and bridge status example.
 - `p4_colorbars`: ESP32-P4 framebuffer output with a static test pattern.
-- `p4_graphics`: ESP32-P4 output using an Adafruit GFX canvas.
+- `p4_graphics`: ESP32-P4 text and shapes drawn directly with Adafruit GFX.
 
 The P4 examples try `readEDIDTiming()` and use the monitor's preferred
 resolution, pixel clock, porches, sync widths, and sync polarities. They fall

@@ -1,19 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Adafruit Industries
 // SPDX-License-Identifier: Apache-2.0
-/** @file Adafruit_LT8912B_P4.cpp
- * @brief ESP32-P4 DSI setup for an independently controlled LT8912B.
+/** @file Adafruit_LT8912B_GFX565.cpp
+ * @brief Adafruit GFX drawing through ESP32-P4 DSI and the LT8912B.
  */
-#include "Adafruit_LT8912B_P4.h"
+#include "Adafruit_LT8912B_GFX565.h"
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <math.h>
 
 #include "esp_lcd_panel_ops.h"
 
 /** Create an uninitialized P4 DSI host. */
-Adafruit_LT8912B_P4::Adafruit_LT8912B_P4() {}
+Adafruit_LT8912B_GFX565::Adafruit_LT8912B_GFX565() : Adafruit_GFX(0, 0) {}
 
 /** Release display resources. Keep the bridge alive until this completes. */
-Adafruit_LT8912B_P4::~Adafruit_LT8912B_P4() {
+Adafruit_LT8912B_GFX565::~Adafruit_LT8912B_GFX565() {
   end();
 }
 
@@ -26,9 +26,9 @@ Adafruit_LT8912B_P4::~Adafruit_LT8912B_P4() {
  * @note Uses P4 internal PHY LDO channel 3 at 2.5 V. begin() is single-owner;
  * call end() before changing timing. This does not configure the I2C pins.
  */
-bool Adafruit_LT8912B_P4::begin(Adafruit_LT8912B& bridge,
-                                const LT8912B_Timing& timing, uint8_t buffers,
-                                uint32_t laneBitRateMbps) {
+bool Adafruit_LT8912B_GFX565::begin(Adafruit_LT8912B& bridge,
+                                    const LT8912B_Timing& timing,
+                                    uint8_t buffers, uint32_t laneBitRateMbps) {
   uint32_t hTotal = (uint32_t)timing.width + timing.hFrontPorch + timing.hSync +
                     timing.hBackPorch;
   uint32_t vTotal = (uint32_t)timing.height + timing.vFrontPorch +
@@ -37,6 +37,10 @@ bool Adafruit_LT8912B_P4::begin(Adafruit_LT8912B& bridge,
     return false;
   }
   if (!timing.width || !timing.height || !laneBitRateMbps) {
+    return false;
+  }
+  // Adafruit GFX coordinates and dimensions are signed 16-bit values.
+  if (timing.width > INT16_MAX || timing.height > INT16_MAX) {
     return false;
   }
   if (!isfinite(timing.pixelClockMHz) || timing.pixelClockMHz <= 0) {
@@ -110,8 +114,9 @@ bool Adafruit_LT8912B_P4::begin(Adafruit_LT8912B& bridge,
     end();
     return false;
   }
-  _width = timing.width;
-  _height = timing.height;
+  WIDTH = timing.width;
+  HEIGHT = timing.height;
+  setRotation(rotation);
   _buffers = buffers;
   return true;
 }
@@ -119,7 +124,7 @@ bool Adafruit_LT8912B_P4::begin(Adafruit_LT8912B& bridge,
 /** Stop output and release only this object's DSI, panel, and PHY resources.
  * The caller's Wire bus and bridge object remain available.
  */
-void Adafruit_LT8912B_P4::end() {
+void Adafruit_LT8912B_GFX565::end() {
   if (_bridge) {
     _bridge->enableOutput(false);
   }
@@ -140,6 +145,60 @@ void Adafruit_LT8912B_P4::end() {
   }
   _buffers = 0;
   _bridge = nullptr;
+  WIDTH = 0;
+  HEIGHT = 0;
+  setRotation(rotation);
+}
+
+/** Draw one RGB565 pixel into framebuffer 0, honoring GFX rotation and
+ * clipping.
+ * @param x Horizontal coordinate in the current rotation.
+ * @param y Vertical coordinate in the current rotation.
+ * @param color RGB565 color, as used by Adafruit GFX.
+ * @note Call show() after drawing. Drawing before begin() or after end() is
+ * ignored.
+ */
+void Adafruit_LT8912B_GFX565::drawPixel(int16_t x, int16_t y, uint16_t color) {
+  if (!_pixels[0] || x < 0 || y < 0 || x >= _width || y >= _height) {
+    return;
+  }
+  int16_t originalX = x;
+  switch (rotation) {
+    case 1:
+      x = WIDTH - 1 - y;
+      y = originalX;
+      break;
+    case 2:
+      x = WIDTH - 1 - x;
+      y = HEIGHT - 1 - y;
+      break;
+    case 3:
+      x = y;
+      y = HEIGHT - 1 - originalX;
+      break;
+  }
+
+  // Unpack GFX's fixed RGB565 pixel format, then expand each channel to 8 bits.
+  uint8_t red = (color >> 11) & 0x1F;
+  uint8_t green = (color >> 5) & 0x3F;
+  uint8_t blue = color & 0x1F;
+  uint8_t* pixel = _pixels[0] + ((size_t)y * WIDTH + x) * 3;
+  pixel[0] = blue * 255 / 31;
+  pixel[1] = green * 255 / 63;
+  pixel[2] = red * 255 / 31;
+}
+
+/** Pack 8-bit RGB components into the standard Adafruit GFX RGB565 format.
+ * @param red Red component, 0 to 255.
+ * @param green Green component, 0 to 255.
+ * @param blue Blue component, 0 to 255.
+ * @return Packed 16-bit RGB565 color.
+ */
+uint16_t Adafruit_LT8912B_GFX565::color565(uint8_t red, uint8_t green,
+                                           uint8_t blue) {
+  // RGB565 stores the high 5 red, 6 green, and 5 blue bits in one 16-bit value.
+  return ((uint16_t)(red & 0xF8) << 8) | ((uint16_t)(green & 0xFC) << 3) |
+         (blue >> 3);
 }
 
 /** Get a panel-owned framebuffer, valid until end().
@@ -148,7 +207,7 @@ void Adafruit_LT8912B_P4::end() {
  * @note With multiple buffers, the caller must coordinate scanout completion
  * before reusing a displayed buffer; show() does not wait for vertical blank.
  */
-uint8_t* Adafruit_LT8912B_P4::getFrameBuffer(uint8_t index) {
+uint8_t* Adafruit_LT8912B_GFX565::getFrameBuffer(uint8_t index) {
   if (index >= _buffers) {
     return nullptr;
   }
@@ -159,12 +218,12 @@ uint8_t* Adafruit_LT8912B_P4::getFrameBuffer(uint8_t index) {
  * @param index Framebuffer index, less than the begin() buffer count.
  * @return True when the IDF driver accepts the buffer, not when scanout ends.
  */
-bool Adafruit_LT8912B_P4::show(uint8_t index) {
+bool Adafruit_LT8912B_GFX565::show(uint8_t index) {
   uint8_t* pixels = getFrameBuffer(index);
   if (!pixels) {
     return false;
   }
-  return esp_lcd_panel_draw_bitmap(_panel, 0, 0, _width, _height, pixels) ==
+  return esp_lcd_panel_draw_bitmap(_panel, 0, 0, WIDTH, HEIGHT, pixels) ==
          ESP_OK;
 }
 
@@ -172,7 +231,7 @@ bool Adafruit_LT8912B_P4::show(uint8_t index) {
  * @return Panel handle, or nullptr before begin() or after end(). Do not delete
  * the handle; this object owns it. Stop external renderers before end().
  */
-esp_lcd_panel_handle_t Adafruit_LT8912B_P4::getPanel() {
+esp_lcd_panel_handle_t Adafruit_LT8912B_GFX565::getPanel() {
   return _panel;
 }
 #endif

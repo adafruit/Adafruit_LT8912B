@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Adafruit Industries
 // SPDX-License-Identifier: Apache-2.0
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_LT8912B_P4.h>
+#include <Adafruit_LT8912B_GFX565.h>
 #include <Adafruit_TestBed.h>
 
 #if !defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -20,10 +19,9 @@ const uint32_t DSI_LANE_BIT_RATE_MBPS = 960;
 
 Adafruit_TestBed testbed;
 Adafruit_LT8912B bridge;
-Adafruit_LT8912B_P4 display;
+Adafruit_LT8912B_GFX565 display;
 
 LT8912B_Timing timing; // Fall back to 800 x 480 if EDID cannot be used.
-GFXcanvas1 canvas(800, 480);
 
 void halt(const char *message);
 
@@ -81,50 +79,34 @@ void setup() {
       halt("Display startup failed. Check PSRAM and the DSI connection.");
     }
   }
-  if (!canvas.getBuffer()) {
-    halt("Could not allocate the GFX canvas.");
-  }
 
-  canvas.fillScreen(0);
-  canvas.drawRoundRect(16, 16, 768, 448, 20, 1);
-  canvas.setTextColor(1);
-  canvas.setTextSize(4);
-  canvas.setCursor(48, 56);
-  canvas.println("Adafruit LT8912B");
-  canvas.setTextSize(2);
-  canvas.setCursor(48, 112);
-  canvas.println("ESP32-P4 DSI + Adafruit GFX");
-  canvas.fillCircle(160, 280, 75, 1);
-  canvas.drawCircle(400, 280, 75, 1);
-  canvas.fillTriangle(560, 355, 640, 205, 720, 355, 1);
+  // Use Adafruit GFX functions directly on the display, with RGB565 colors.
+  // Draw once; repeated writes into an active single buffer can tear.
+  uint16_t foreground = display.color565(80, 220, 255);
+  uint16_t background = display.color565(8, 12, 24);
+  int16_t width = display.width();
+  int16_t height = display.height();
+  int16_t radius = height / 6;
 
-  uint8_t *pixels = display.getFrameBuffer();
-  if (!pixels) {
-    halt("No framebuffer available.");
-  }
-  // Convert the one-bit canvas to the panel's blue, green, red byte order.
-  // Scale the 800 x 480 drawing to the selected monitor resolution.
-  // Render only once; repeated writes into an active single buffer can tear.
-  for (uint16_t y = 0; y < timing.height; y++) {
-    uint16_t canvasY = (uint32_t)y * canvas.height() / timing.height;
-    for (uint16_t x = 0; x < timing.width; x++) {
-      uint16_t canvasX = (uint32_t)x * canvas.width() / timing.width;
-      bool lit = canvas.getPixel(canvasX, canvasY);
-      if (lit) {
-        *pixels++ = 255;
-        *pixels++ = 220;
-        *pixels++ = 80;
-      } else {
-        *pixels++ = 24;
-        *pixels++ = 12;
-        *pixels++ = 8;
-      }
-    }
-  }
+  display.fillScreen(background);
+  display.drawRoundRect(16, 16, width - 32, height - 32, 20, foreground);
+  display.setTextColor(foreground);
+  display.setTextSize(4);
+  display.setCursor(48, 56);
+  display.print("Adafruit LT8912B");
+  display.setTextSize(2);
+  display.setCursor(48, 112);
+  display.print("ESP32-P4 DSI + Adafruit GFX");
+  display.fillCircle(width / 5, height * 3 / 5, radius, foreground);
+  display.drawCircle(width / 2, height * 3 / 5, radius, foreground);
+  display.fillTriangle(width * 4 / 5 - radius, height * 3 / 5 + radius,
+                       width * 4 / 5, height * 3 / 5 - radius,
+                       width * 4 / 5 + radius, height * 3 / 5 + radius,
+                       foreground);
   if (!display.show()) {
     halt("Could not display the framebuffer.");
   }
-  Serial.println("Static GFX canvas displayed in DVI mode.");
+  Serial.print("Static GFX drawing displayed in DVI mode.\n\r");
 }
 
 void loop() {
