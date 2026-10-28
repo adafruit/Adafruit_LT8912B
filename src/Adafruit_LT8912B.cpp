@@ -32,9 +32,9 @@ Adafruit_LT8912B::~Adafruit_LT8912B() {
  * @param resetPin Active-low reset GPIO, or a negative value to leave reset to
  * the caller.
  * @return True when all three fixed addresses (0x48, 0x49, 0x4A) acknowledge.
- * @note This checks acknowledgements, not silicon identity: no chip-ID check is
- * implemented. Disconnect the adapter's DDC switch before calling this method;
- * a monitor's DDC/ISP devices can collide with the bridge register addresses.
+ * @note Checks acknowledgements, not silicon identity. Before begin(), hold
+ * the bridge in reset and check 0x48-0x4A for other devices if DDC shares the
+ * bus. Isolate DDC only when a monitor device conflicts with a bridge address.
  */
 bool Adafruit_LT8912B::begin(int16_t resetPin, TwoWire* wire) {
   _initialized = false;

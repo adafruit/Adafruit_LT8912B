@@ -44,11 +44,13 @@ unsupported, exceeds the configured two-lane RGB888 bandwidth, or the display
 helper cannot start that mode. Monitor compatibility still requires testing.
 
 To read EDID, turn the Adafruit adapter's **DDC switch ON** before starting.
-The examples hold the bridge in reset while reading, then wait for you to
-turn the **DDC switch OFF**, with no QT cable bypassing it, before starting
-video. This keeps monitor DDC devices from conflicting with the bridge's
-control addresses at 0x48, 0x49, and 0x4A. With DDC disconnected at startup,
-the examples use the fallback mode.
+The examples hold the bridge in reset while reading, then check its control
+addresses at 0x48, 0x49, and 0x4A for conflicts. DDC can stay connected when
+those addresses are clear; an EDID response at 0x50 does not block startup.
+If a bridge address responds during reset, the sketch reports that address
+and waits for it to clear. Check the reset wiring, or isolate a conflicting
+monitor by turning the **DDC switch OFF** and removing any QT bypass.
+With DDC disconnected at startup, the examples use the fallback mode.
 
 ## Optional EDID timing
 

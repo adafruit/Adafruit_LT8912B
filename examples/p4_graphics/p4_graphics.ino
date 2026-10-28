@@ -8,17 +8,20 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32P4)
 #error "This example requires an ESP32-P4 board with PSRAM."
 #endif
+
 // Set the reset pin to match your ESP32-P4 board and LT8912B wiring.
 #if defined(PIN_DSI_RESET)
 const uint16_t RESET_PIN = PIN_DSI_RESET;
 #else
 const uint16_t RESET_PIN = 20; // Example GPIO; change to your bridge's reset pin.
 #endif
-#define MONITOR_EDID_ADDRESS 0x50
+
 const uint32_t DSI_LANE_BIT_RATE_MBPS = 960;
+
 Adafruit_TestBed testbed;
 Adafruit_LT8912B bridge;
 Adafruit_LT8912B_P4 display;
+
 LT8912B_Timing timing; // Fall back to 800 x 480 if EDID cannot be used.
 GFXcanvas1 canvas(800, 480);
 
@@ -48,13 +51,19 @@ void setup() {
     Serial.print("No usable EDID timing; using the 800 x 480 fallback.\n\r");
   }
 
-  // Disconnect DDC before bridge writes: monitor devices can share its addresses.
-  if (testbed.scanI2CBus(MONITOR_EDID_ADDRESS)) {
-    Serial.print("Turn the adapter DDC switch OFF and remove any QT bypass to continue.\n\r");
-    while (testbed.scanI2CBus(MONITOR_EDID_ADDRESS)) {
-      delay(100);
+  // With the bridge held in reset, its three addresses should be silent.
+  // An EDID response at 0x50 is normal and does not conflict with the bridge.
+  for (uint8_t address = LT8912B_I2C_MAIN; address <= LT8912B_I2C_AVI; address++) {
+    if (testbed.scanI2CBus(address)) {
+      Serial.print("I2C address conflict at 0x");
+      Serial.print(address, HEX);
+      Serial.print(". Check reset wiring or disconnect monitor DDC to continue.\n\r");
+      while (testbed.scanI2CBus(address)) {
+        delay(100);
+      }
     }
   }
+
   if (!bridge.begin(RESET_PIN)) {
     halt("LT8912B not found.");
   }
