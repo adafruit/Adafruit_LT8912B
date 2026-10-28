@@ -37,16 +37,18 @@ That board definition is proposed in
 - `p4_colorbars`: ESP32-P4 framebuffer output with a static test pattern.
 - `p4_graphics`: ESP32-P4 output using an Adafruit GFX canvas.
 
-The P4 examples use the previously tested 800 x 480 video timing.
-Check the reset pin and timing configuration
-before using another board or monitor. Monitor acceptance of a timing or sync
-polarity must be tested. The examples keep their fixed mode; applications can
-optionally select the display's preferred timing with `readEDIDTiming()`.
+The P4 examples try `readEDIDTiming()` and use the monitor's preferred
+resolution, pixel clock, porches, sync widths, and sync polarities. They fall
+back to the previously tested 800 x 480 mode if EDID is unavailable,
+unsupported, exceeds the configured two-lane RGB888 bandwidth, or the display
+helper cannot start that mode. Monitor compatibility still requires testing.
 
-Keep the Adafruit adapter's **DDC switch OFF**, with no QT cable bypassing it,
-while running these fixed-mode examples. Connecting the monitor DDC bus to the control
-bus can introduce conflicting I2C devices. The bridge control addresses are
-0x48, 0x49, and 0x4A.
+To read EDID, turn the Adafruit adapter's **DDC switch ON** before starting.
+The examples hold the bridge in reset while reading, then wait for you to
+turn the **DDC switch OFF**, with no QT cable bypassing it, before starting
+video. This keeps monitor DDC devices from conflicting with the bridge's
+control addresses at 0x48, 0x49, and 0x4A. With DDC disconnected at startup,
+the examples use the fallback mode.
 
 ## Optional EDID timing
 
