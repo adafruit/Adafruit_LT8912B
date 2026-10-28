@@ -16,8 +16,8 @@ jobs:
         python-version: '3.x'
     - uses: actions/checkout@v4
       with:
-         repository: ladyada-eagleclaw/ci-arduino
-         ref: main
+         repository: adafruit/ci-arduino
+         ref: master
          path: ci
 
     - name: pre-install

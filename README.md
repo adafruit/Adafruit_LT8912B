@@ -90,8 +90,7 @@ MJPEG video; MP4 soundtrack decoding is not supplied here.
 The Adafruit CI workflow builds all examples on its `metro_esp32p4` target,
 and checks formatting and standard Doxygen documentation. This target uses
 the source core while the new board definition awaits upstream inclusion.
-It temporarily uses the CI fork containing
-[ci-arduino #234](https://github.com/adafruit/ci-arduino/pull/234).
+It uses the upstream [Adafruit CI scripts](https://github.com/adafruit/ci-arduino).
 
 Local checks on 2026-10-07: all three examples compiled for the new Metro P4
 board definition on the Arduino-ESP32 4.0.x source core. `p4_colorbars` also
