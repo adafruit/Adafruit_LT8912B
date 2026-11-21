@@ -172,6 +172,7 @@
 /** AVI bank register addresses. Vendor tuning names follow Espressif. */
 #define LT8912B_REG_AVI_AUDIO_ACQUISITION 0x06 ///< AVI bank audio acquisition.
 #define LT8912B_REG_AVI_AUDIO_CLOCK 0x07       ///< AVI bank audio clock.
+#define LT8912B_REG_AVI_AUDIO_FORMAT 0x0F      ///< AVI bank audio format.
 #define LT8912B_REG_AVI_I2S_CONTROL 0x34       ///< AVI bank i2s control.
 #define LT8912B_REG_AVI_PACKET_CONTROL 0x3C    ///< AVI bank packet control.
 #define LT8912B_REG_AVI_CHECKSUM 0x43          ///< AVI bank checksum.
@@ -211,6 +212,7 @@ class Adafruit_LT8912B {
   bool reset();
   bool configure(const LT8912B_Timing& timing, uint8_t lanes = 2);
   bool setHDMI(bool enabled);
+  bool enableAudio(bool enabled);
   bool enableOutput(bool enabled);
   bool getHPD();
 
