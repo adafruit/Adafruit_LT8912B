@@ -331,22 +331,12 @@ bool Adafruit_LT8912B::configure(const LT8912B_Timing& timing, uint8_t lanes) {
       {LT8912B_REG_MAIN_LVDS_PLL_CONTROL,
        0x31}, // Disable LVDS output; use HDMI/DVI transmitter only.
   };
-  // Video-only change: keep audio acquisition and packets disabled. These are
-  // the LT8912B audio shutdown values, not Espressif's default I2S enable
-  // table.
-  const RegisterValue audioOff[] = {
-      {LT8912B_REG_AVI_AUDIO_ACQUISITION, 0x00}, // Stop audio acquisition.
-      {LT8912B_REG_AVI_AUDIO_CLOCK, 0x00}, // Disable audio clock regeneration.
-      {LT8912B_REG_AVI_I2S_CONTROL, 0x52}, // Disable I2S input.
-      {LT8912B_REG_AVI_PACKET_CONTROL,
-       0x40}, // Disable audio/null packet insertion.
-  };
   if (!writeSequence(_main, lvdsBypass,
                      sizeof(lvdsBypass) / sizeof(RegisterValue))) {
     return false;
   }
-  if (!writeSequence(_avi, audioOff,
-                     sizeof(audioOff) / sizeof(RegisterValue))) {
+  // Start with audio off.
+  if (!enableAudio(false)) {
     return false;
   }
   if (!setHDMI(false)) {
@@ -421,6 +411,44 @@ bool Adafruit_LT8912B::setHDMI(bool enabled) {
   Adafruit_BusIO_Register mode(_main, LT8912B_REG_MAIN_HDMI_MODE);
   Adafruit_BusIO_RegisterBits hdmiEnabled(&mode, 1, 0);
   return hdmiEnabled.write(enabled);
+}
+
+/**
+ * @brief Enable or disable I2S audio. Enabling also selects HDMI mode;
+ * disabling leaves the mode unchanged. The I2S input must be 48 kHz stereo
+ * in 32-bit slots.
+ *
+ * @param enabled True to send I2S audio over HDMI; false to stop audio.
+ * @return True if every register write succeeded.
+ */
+bool Adafruit_LT8912B::enableAudio(bool enabled) {
+  if (!_initialized) {
+    return false;
+  }
+  // Values from Espressif's esp_lcd_lt8912b.
+  const RegisterValue audioOn[] = {
+      {LT8912B_REG_AVI_PACKET_CONTROL,
+       0x41}, // Enable audio/null packet insertion.
+      {LT8912B_REG_AVI_AUDIO_ACQUISITION, 0x08}, // Start audio acquisition.
+      {LT8912B_REG_AVI_AUDIO_CLOCK, 0xF0},  // Enable audio clock regeneration.
+      {LT8912B_REG_AVI_I2S_CONTROL, 0xD2},  // Enable I2S input.
+      {LT8912B_REG_AVI_AUDIO_FORMAT, 0x2B}, // 48 kHz.
+  };
+  const RegisterValue audioOff[] = {
+      {LT8912B_REG_AVI_AUDIO_ACQUISITION, 0x00}, // Stop audio acquisition.
+      {LT8912B_REG_AVI_AUDIO_CLOCK, 0x00}, // Disable audio clock regeneration.
+      {LT8912B_REG_AVI_I2S_CONTROL, 0x52}, // Disable I2S input.
+      {LT8912B_REG_AVI_PACKET_CONTROL,
+       0x40}, // Disable audio/null packet insertion.
+  };
+  if (!enabled) {
+    return writeSequence(_avi, audioOff,
+                         sizeof(audioOff) / sizeof(RegisterValue));
+  }
+  if (!setHDMI(true)) {
+    return false;
+  }
+  return writeSequence(_avi, audioOn, sizeof(audioOn) / sizeof(RegisterValue));
 }
 
 /**

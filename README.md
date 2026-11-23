@@ -10,7 +10,23 @@ GFX drawing targets framebuffer 0. `getFrameBuffer()` and `getPanel()` remain
 available for direct 24-bit drawing and separate video integration.
 Drawing repeatedly into an active single buffer can tear, double buffer for clean draws!
 
-We tried to get HDMI audio working but not successful yet (PR's welcome!) We do not have the under-NDA LT8912B datasheet and prefer to keep this codebase NDA free :)
+HDMI audio is supported, see below. We do not have the under-NDA LT8912B datasheet and prefer to keep this codebase NDA free :)
+
+## HDMI audio
+
+`enableAudio(true)` switches the bridge to HDMI mode and turns on its I2S
+audio input; `enableAudio(false)` turns audio off again. The
+`p4_hdmi_audio_tone` example shows color bars and plays a 440 Hz tone.
+
+- Wire I2S into the adapter's header: BCK (bit clock), LRC (word select) and
+  DIN (data). The example uses Metro ESP32-P4 A0, A1 and A2. These pins are
+  inputs to the bridge. No MCLK is needed.
+- Send 48 kHz stereo, Philips I2S, in **32-bit slots** (64 bit clocks per
+  frame). The bridge plays nothing with 16-bit slots, and some monitors stay
+  silent until power-cycled. With `ESP_I2S`, use `I2S_DATA_BIT_WIDTH_32BIT`
+  and put each 16-bit sample in the top half.
+- If the monitor answers at 0x4A (see below), turn the **DDC switch OFF**.
+- The monitor needs an HDMI input with audio; DVI inputs carry no sound.
 
 ## EDID Conflicts with RTD266x
 
