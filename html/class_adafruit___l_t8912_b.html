@@ -99,6 +99,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1aee9a219e4a70da0d888825798f17a7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___l_t8912_b.html#a1aee9a219e4a70da0d888825798f17a7">setHDMI</a> (bool enabled)</td></tr>
 <tr class="memdesc:a1aee9a219e4a70da0d888825798f17a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Select HDMI signaling or DVI signaling without enabling audio.  <a href="#a1aee9a219e4a70da0d888825798f17a7">More...</a><br /></td></tr>
 <tr class="separator:a1aee9a219e4a70da0d888825798f17a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1c5d3a50d12a70f74f9b7f958e128e9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___l_t8912_b.html#ab1c5d3a50d12a70f74f9b7f958e128e9">enableAudio</a> (bool enabled)</td></tr>
+<tr class="memdesc:ab1c5d3a50d12a70f74f9b7f958e128e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable or disable I2S audio. Enabling also selects HDMI mode; disabling leaves the mode unchanged. The I2S input must be 48 kHz stereo in 32-bit slots.  <a href="#ab1c5d3a50d12a70f74f9b7f958e128e9">More...</a><br /></td></tr>
+<tr class="separator:ab1c5d3a50d12a70f74f9b7f958e128e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe0036f8268fbb632c678af8336b1a68"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___l_t8912_b.html#abe0036f8268fbb632c678af8336b1a68">enableOutput</a> (bool enabled)</td></tr>
 <tr class="memdesc:abe0036f8268fbb632c678af8336b1a68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable or disable the HDMI/DVI transmitter without changing its mode.  <a href="#abe0036f8268fbb632c678af8336b1a68">More...</a><br /></td></tr>
 <tr class="separator:abe0036f8268fbb632c678af8336b1a68"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -402,6 +405,33 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the mode field was written successfully. </dd></dl>
+
+</div>
+</div>
+<a id="ab1c5d3a50d12a70f74f9b7f958e128e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1c5d3a50d12a70f74f9b7f958e128e9">&#9670;&nbsp;</a></span>enableAudio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Adafruit_LT8912B::enableAudio </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enabled</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable or disable I2S audio. Enabling also selects HDMI mode; disabling leaves the mode unchanged. The I2S input must be 48 kHz stereo in 32-bit slots. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enabled</td><td>True to send I2S audio over HDMI; false to stop audio. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if every register write succeeded. </dd></dl>
 
 </div>
 </div>

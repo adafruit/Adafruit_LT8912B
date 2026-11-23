@@ -18,6 +18,7 @@ var searchData=
   ['lt8912b_5fi2c_5fmain',['LT8912B_I2C_MAIN',['../_adafruit___l_t8912_b_8h.html#a688daa240f3728b3513db69bda5512c3',1,'Adafruit_LT8912B.h']]],
   ['lt8912b_5freg_5favi_5faudio_5facquisition',['LT8912B_REG_AVI_AUDIO_ACQUISITION',['../_adafruit___l_t8912_b_8h.html#ad4d0f306ffc64d9840657ff853c4cdd8',1,'Adafruit_LT8912B.h']]],
   ['lt8912b_5freg_5favi_5faudio_5fclock',['LT8912B_REG_AVI_AUDIO_CLOCK',['../_adafruit___l_t8912_b_8h.html#a4b036e1901d575f1d1a48faebd4c64bd',1,'Adafruit_LT8912B.h']]],
+  ['lt8912b_5freg_5favi_5faudio_5fformat',['LT8912B_REG_AVI_AUDIO_FORMAT',['../_adafruit___l_t8912_b_8h.html#a8d6daa197efc49746257abe22b1ca96f',1,'Adafruit_LT8912B.h']]],
   ['lt8912b_5freg_5favi_5fchecksum',['LT8912B_REG_AVI_CHECKSUM',['../_adafruit___l_t8912_b_8h.html#a67abdfe57c99e8af3e2b32ace535a84c',1,'Adafruit_LT8912B.h']]],
   ['lt8912b_5freg_5favi_5fi2s_5fcontrol',['LT8912B_REG_AVI_I2S_CONTROL',['../_adafruit___l_t8912_b_8h.html#ad00b36f14302895fe71e35fb3084c783',1,'Adafruit_LT8912B.h']]],
   ['lt8912b_5freg_5favi_5fpacket_5fcontrol',['LT8912B_REG_AVI_PACKET_CONTROL',['../_adafruit___l_t8912_b_8h.html#ada982e76db695af28402364d1b5a0856',1,'Adafruit_LT8912B.h']]],
